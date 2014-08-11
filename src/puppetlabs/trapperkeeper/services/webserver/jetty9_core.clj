@@ -411,6 +411,7 @@
           ^HandlerCollection hc (HandlerCollection.)]
     (.setHandlers hc (into-array Handler [(:handlers webserver-context)]))
     (.setHandler s (gzip-handler hc))
+    (.setStopTimeout s 100)
     (assoc webserver-context :server s)))
 
 (schema/defn ^:always-validate start-webserver! :- ServerContext
