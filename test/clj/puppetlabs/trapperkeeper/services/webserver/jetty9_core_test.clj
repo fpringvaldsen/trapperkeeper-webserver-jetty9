@@ -14,7 +14,7 @@
       (jetty/add-ring-handler webserver-context
                               (fn [req] {:status 200
                                          :body "I am a handler"})
-                              "/")
+                              "/hello")
       (is (= (count (.getHandlers handlers)) 1)))))
 
 (deftest compression

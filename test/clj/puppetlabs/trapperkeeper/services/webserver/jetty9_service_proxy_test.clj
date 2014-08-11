@@ -84,10 +84,10 @@
         (let [response (http-get "http://localhost:9000/hello/world")]
           (is (= (:status response) 200))
           (is (= (:body response) "Hello, World!")))
-        (is (thrown? TimeoutException (http-get "http://localhost:10000/hello-proxy/world"
-                                                {:headers {"Cookie" absurdly-large-cookie}
-                                                 :as      :text
-                                                 :timeout 3000})))))
+        (let [response (http-get "http://localhost:10000/hello-proxy/world"
+                                 {:headers {"Cookie" absurdly-large-cookie}
+                                  :as      :text})]
+          (is (= (:status response) 502)))))
 
     (testing "proxy does not explode on a large cookie when properly configured"
       (with-target-and-proxy-servers

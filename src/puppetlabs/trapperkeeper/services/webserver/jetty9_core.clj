@@ -6,6 +6,7 @@
            (org.eclipse.jetty.util.resource Resource)
            (org.eclipse.jetty.util.thread QueuedThreadPool)
            (org.eclipse.jetty.util.ssl SslContextFactory)
+           (org.eclipse.jetty.util.log Log)
            (javax.servlet.http HttpServletRequest HttpServletResponse)
            (java.util.concurrent Executors)
            (org.eclipse.jetty.servlets.gzip GzipHandler)
@@ -19,7 +20,8 @@
            (java.net URI)
            (java.security Security)
            (org.eclipse.jetty.client HttpClient)
-           (clojure.lang Atom))
+           (clojure.lang Atom)
+           (java.lang.String))
   (:require [ring.util.servlet :as servlet]
             [clojure.string :as str]
             [clojure.set :as set]
@@ -257,6 +259,9 @@
   [webserver-context :- ServerContext
    handler :- ContextHandler]
   (.addHandler (:handlers webserver-context) handler)
+  (let [server (:server webserver-context)]
+    (if (not (nil? server))
+      (.start handler)))
   handler)
 
 (defn- ring-handler
@@ -310,7 +315,16 @@
 
       (customizeProxyRequest [proxy-req req]
         (if-let [callback-fn (:callback-fn options)]
-         (callback-fn proxy-req req))))))
+         (callback-fn proxy-req req)))
+
+      (createLogger []
+        (let [servlet-name (str/replace (-> .getServletName .getServletConfig 'this) "-" ".")
+              class (.getClass 'this)]
+          (Log/getLogger (if-let [package (.getPackage class)]
+                           (if (.startsWith servlet-name (.getName package))
+                             (str (.getName class) "." servlet-name)
+                             servlet-name)
+                           servlet-name)))))))
 
 (schema/defn ^:always-validate
   register-endpoint!

@@ -1,5 +1,6 @@
 (def tk-version "0.4.2")
 (def ks-version "0.7.1")
+(def jetty-version "9.2.2.v20140723")
 
 (defproject puppetlabs/trapperkeeper-webserver-jetty9 "0.5.3-SNAPSHOT"
   :description "We are trapperkeeper.  We are one."
@@ -17,12 +18,12 @@
                  [javax.servlet/javax.servlet-api "3.1.0"]
 
                  ;; Jetty Webserver
-                 [org.eclipse.jetty/jetty-server "9.1.0.v20131115"
+                 [org.eclipse.jetty/jetty-server ~jetty-version
                   :exclusions [org.eclipse.jetty.orbit/javax.servlet]]
-                 [org.eclipse.jetty/jetty-servlet "9.1.0.v20131115"]
-                 [org.eclipse.jetty/jetty-servlets "9.1.0.v20131115"]
-                 [org.eclipse.jetty/jetty-webapp "9.1.0.v20131115"]
-                 [org.eclipse.jetty/jetty-proxy "9.1.0.v20131115"]
+                 [org.eclipse.jetty/jetty-servlet ~jetty-version]
+                 [org.eclipse.jetty/jetty-servlets ~jetty-version]
+                 [org.eclipse.jetty/jetty-webapp ~jetty-version]
+                 [org.eclipse.jetty/jetty-proxy ~jetty-version]
 
                  [ring/ring-servlet "1.1.8" :exclusions [javax.servlet/servlet-api]]]
                    
