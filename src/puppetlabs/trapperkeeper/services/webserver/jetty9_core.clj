@@ -297,6 +297,7 @@
   a given context to another host."
   [webserver-context :- ServerContext
    target :- ProxyTarget
+   path :- schema/Str
    options :- ProxyOptions]
   (let [custom-ssl-ctxt-factory (when (map? (:ssl-config options))
                                   (get-proxy-client-context-factory (:ssl-config options)))
@@ -326,6 +327,24 @@
               (rewrite-uri-callback-fn target-uri req)
               target-uri))))
 
+      (filterResponseHeader [request headerName headerValue]
+        (if (= "Location" headerName)
+          (let [redirect-path (.getPath (URI. headerValue))
+                uri    (.getURI (:server webserver-context))
+                scheme (.getScheme uri)
+                host   (.getHost uri)
+                port   (.getPort uri)
+                target-path (str "/" (:path target))
+                final-path  (.replaceFirst redirect-path target-path path)]
+            (.toString (URI. scheme
+                             nil
+                             host
+                             port
+                             final-path
+                             nil
+                             nil)))
+          headerValue))
+
       (newHttpClient []
         (let [client (if custom-ssl-ctxt-factory
                        (HttpClient. custom-ssl-ctxt-factory)
@@ -337,12 +356,8 @@
             (.setRequestBufferSize client config/default-request-header-buffer-size))
           client))
 
-      (createHttpClient []
-        (let [client (proxy-super createHttpClient)]
-          (if (:follow-redirects options)
-            (.setFollowRedirects client true)
-            (.setFollowRedirects client false))
-          client))
+      ;(onResponseSuccess [request response proxyResponse]
+      ;  (proxy-super onResponseSuccess request response proxyResponse))
 
       (customizeProxyRequest [proxy-req req]
         (if-let [callback-fn (:callback-fn options)]
@@ -527,7 +542,7 @@
    options :- ProxyOptions]
   (let [target (update-in target [:path] remove-leading-slash)]
     (add-servlet-handler webserver-context
-                         (proxy-servlet webserver-context target options)
+                         (proxy-servlet webserver-context target path options)
                          path)))
 
 (schema/defn ^:always-validate
