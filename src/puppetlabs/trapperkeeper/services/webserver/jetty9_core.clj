@@ -329,20 +329,14 @@
 
       (filterResponseHeader [request headerName headerValue]
         (if (= "Location" headerName)
-          (let [redirect-path (.getPath (URI. headerValue))
-                uri    (.getURI (:server webserver-context))
-                scheme (.getScheme uri)
-                host   (.getHost uri)
-                port   (.getPort uri)
+          (let [redirect-uri  (URI. headerValue)
+                redirect-path (.getPath redirect-uri)
+                query-params  (.getQuery redirect-uri)
                 target-path (str "/" (:path target))
                 final-path  (.replaceFirst redirect-path target-path path)]
-            (.toString (URI. scheme
-                             nil
-                             host
-                             port
-                             final-path
-                             nil
-                             nil)))
+            (if (nil? query-params)
+              final-path
+              (str final-path "?" query-params)))
           headerValue))
 
       (newHttpClient []
